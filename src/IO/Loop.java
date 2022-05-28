@@ -12,90 +12,112 @@ import java.util.Arrays;
 public class Loop implements Printer {
     io inOut = new io();
     choice choices;
+    SearchType searchTypes;
 
     public void loop(Person[] persons){
         PersonDatabase database = new PersonDatabase();
         boolean endOfProgram = false;
         do{
-        System.out.println(Arrays.toString(choice.values()));
-        print("Wybierz działanie: ");
-        String userChoice = inOut.getString().toUpperCase();
-        choices = choice.valueOf(userChoice);
+            try {
+                System.out.println(Arrays.toString(choice.values()));
+                print("Wybierz działanie: ");
+                String userChoice = inOut.getString().toUpperCase();
+                choices = choice.valueOf(userChoice);
 
-        switch (choices){
+                switch (choices) {
 
-            case ADD -> {
-                persons = database.addPerson(persons);
-            }
-            case PRINT -> {
-                database.printArray(persons);
-            }
-            case GET -> {
-                SearchType find;
-                print("Wybrałeś wyszukiwanie danych osobowych.");
-                print("Wybierz sposó identyfikacji: ");
-                print("Po numerze porządkowym, wpisz LP");
-                print("Po Imieniu oraz Nazwisku, wpisz NN");
-                print("Po numerze PESEL, wpisz PESEL ");
-                print("Wybieram: ");
-                String searchType = inOut.getString();
-                find = SearchType.valueOf(searchType);
-                switch (find){
-
-                    case LP -> {
-                        getPersonFromIndex(persons, database);
+                    case ADD -> {
+                        print("Podaj ilość osób, które chcesz wprowadzić do systemu: ");
+                        int amount = inOut.getInt();
+                        for (int i = 0; i<amount; i++){
+                        persons = database.addPerson(persons);
+                        }
+                        userChoice = inOut.getString();
                     }
-                    case NN -> {
-                        getPersonFromNames(persons, database);
+                    case PRINT -> {
+                        database.printArray(persons);
                     }
-                    case PESEL -> {
+                    case GET -> {
+                        SearchType find;
+
+                        System.out.println(Arrays.toString(searchTypes.values()));
+                        print("Wybieram: ");
+                        String searchType = inOut.getString();
+                        find = SearchType.valueOf(searchType.toUpperCase());
+                        switch (find) {
+
+                            case LP -> {
+                                getPersonFromIndex(persons, database);
+                            }
+                            case NN -> {
+                                getPersonFromNames(persons, database);
+                            }
+                            case PESEL -> {
+                                getPersonFromPesel(persons, database);
+                            }
+                        }
+                    }
+
+                    case SIZE -> {
+                        database.size(persons);
+                    }
+                    case REMOVE -> {
+                        int index = 0;
+                        for (Person person : persons) {
+                            System.out.print(index + " - " + person.getFirstName());
+                            index++;
+                        }
+                        print("Wybierz osobę, której dane chcesz usunąć: ");
+                        persons = database.remove(persons, persons[index]);
+                    }
+                    case EXIT -> {
+                        endOfProgram = true;
+                    }
+                    default -> {
+                        print("Błędny wybór, spróbuj ponownie");
                     }
                 }
-
-
-
+            }  catch ( IllegalArgumentException e){
+                System.err.println("Podano błędny wybór");
             }
-            case SIZE -> {
-                database.size(persons);
-            }
-            case REMOVE -> {
-                int index = 0;
-                for (Person person : persons) {
-                    System.out.print(index + " - " + person.getFirstName());
-                    index++;
-                }
-                print("Wybierz osobę, której dane chcesz usunąć: ");
-                persons = database.remove( persons, persons[index]);
-            }
-            case EXIT -> {
-                endOfProgram = true;
-            }
-            default -> {
-                print("Błędny wybór, spróbuj ponownie");
-            }
-        }
-
 
         } while (!endOfProgram);
+    }
+
+    private void getPersonFromPesel(Person[] persons, PersonDatabase database) {
+        boolean equal = false;
+        print ("Podaj poszukiwany numer PESEL: ");
+        String searchedPesel = inOut.getString();
+        for (int i=0; i<persons.length && !equal; i++){
+            if (persons[i] != null){
+                equal = true;
+                print(persons[i]);
+            }
+        }
+        if (!equal)
+            print("Nie odnaleziono osoby z podanym numerem pesel: " + searchedPesel);
     }
 
     private void getPersonFromNames(Person[] persons, PersonDatabase database) {
         boolean equal = false;
         print("Podaj imię: ");
-        String seachedName = inOut.getString();
+        String seachedName = inOut.getString().toLowerCase();
         print("Podaj nazwisko: ");
-        String searchedLastName = inOut.getString();
+        String searchedLastName = inOut.getString().toLowerCase();
         Person foundPerson = null;
-        for (int i = 0; i < persons.length && !equal; i++) {
-            if (persons[i].getFirstName().toLowerCase().equals(seachedName.toLowerCase()) &&
-                    persons[i].getLastName().toLowerCase().equals(searchedLastName)){
+        StringBuilder personsFound = new StringBuilder();
+        for (int i = 0; i < persons.length; i++) {
+            if (persons[i] != null) {
+                if (persons[i].getFirstName().toLowerCase().equals(seachedName) &&
+                        persons[i].getLastName().toLowerCase().equals(searchedLastName)) {
                     equal = true;
-                    foundPerson = persons[i];
+                    personsFound.append(persons[i] + "\n");
+                }
             }
         }
         if (equal) {
             print("Znaleziono osobę: ");
-            print(foundPerson.toString());
+            print(personsFound);
         }
         else
             print("Nie znaleziono osoby o podanym Imieniu: " + seachedName + ", oraz Nazwisku: " + searchedLastName);

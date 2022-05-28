@@ -15,16 +15,19 @@ public class PersonDatabase implements Printer {
     }
 
     public Person[] addPerson(Person[] persons) {
-        currentLength++;
-        Person person = inOut.createPerson();
-        if (person == null)
-            throw new NullPointerException("Wrzuciłeś pusty obiekt!?");
 
-        if (currentLength == persons.length) {
-            persons = Arrays.copyOf(persons, (persons.length * 2));
-        }
-        persons[currentLength - 1] = person;
-        return persons;
+            currentLength++;
+            Person person = inOut.createPerson();
+            if (person == null)
+                throw new NullPointerException("Wrzuciłeś pusty obiekt!?");
+
+            if (currentLength == persons.length) {
+                persons = Arrays.copyOf(persons, (persons.length * 2));
+            }
+            persons[currentLength - 1] = person;
+
+            return persons;
+
     }
 
     public void printArray(Person[] persons) {
